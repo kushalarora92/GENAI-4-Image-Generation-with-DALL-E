@@ -1,0 +1,138 @@
+<!-- A beautiful HTML that accepts an input prompt from the user, a submission button and on submission, generates two AI images on the page. Show a loader and reset when a new submission is provided. Create a nice webpage for that. Use any css library you wish.-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Generator</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+        }
+        .prompt-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            backdrop-filter: blur(4px);
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        .image-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .generated-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        .loader {
+            display: none;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 5px solid #3498db;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="prompt-card">
+            <h1 class="text-center mb-4">AI Image Generator</h1>
+            <form id="generationForm">
+                <div class="mb-3">
+                    <label for="prompt" class="form-label">Enter your prompt</label>
+                    <textarea 
+                        class="form-control" 
+                        id="prompt" 
+                        rows="3" 
+                        placeholder="Describe the image you want to generate..."
+                        required
+                    ></textarea>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary px-4 py-2">Generate Images</button>
+                </div>
+            </form>
+            
+            <div class="loader" id="loader"></div>
+            
+            <div class="image-container">
+                <img src="" alt="Generated Image 1" class="generated-image" id="image1">
+                <img src="" alt="Generated Image 2" class="generated-image" id="image2">
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const form = document.getElementById('generationForm');
+        const loader = document.getElementById('loader');
+        const image1 = document.getElementById('image1');
+        const image2 = document.getElementById('image2');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Hide existing images
+            image1.style.display = 'none';
+            image2.style.display = 'none';
+            
+            // Show loader
+            loader.style.display = 'block';
+            
+            const prompt = document.getElementById('prompt').value;
+            
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+                
+                const data = await response.json();
+                
+                // Hide loader
+                loader.style.display = 'none';
+                
+                // Display new images
+                image1.src = data.images[0];
+                image2.src = data.images[1];
+                image1.style.display = 'block';
+                image2.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                loader.style.display = 'none';
+                alert('An error occurred while generating images');
+            }
+        });
+    </script>
+</body>
+</html>
+
